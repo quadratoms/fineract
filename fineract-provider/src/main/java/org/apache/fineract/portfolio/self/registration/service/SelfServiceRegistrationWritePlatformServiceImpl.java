@@ -92,6 +92,7 @@ public class SelfServiceRegistrationWritePlatformServiceImpl implements SelfServ
     @Override
     public SelfServiceRegistration createRegistrationRequest(String apiRequestBodyAsJson) {
         Gson gson = new Gson();
+        System.out.println(apiRequestBodyAsJson);
         final Type typeOfMap = new TypeToken<Map<String, Object>>() {}.getType();
         final List<ApiParameterError> dataValidationErrors = new ArrayList<>();
         final DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors).resource("user");
@@ -136,15 +137,19 @@ public class SelfServiceRegistrationWritePlatformServiceImpl implements SelfServ
             baseDataValidator.reset().parameter(SelfServiceApiConstants.mobileNumberParamName).value(mobileNumber).notNull()
                     .validatePhoneNumber();
         }
+
         validateForDuplicateUsername(username);
 
         throwExceptionIfValidationError(dataValidationErrors, accountNumber, firstName, lastName, mobileNumber, isEmailAuthenticationMode);
 
         String authenticationToken = randomAuthorizationTokenGeneration();
+        System.out.println("iwashere1");
         Client client = this.clientRepository.getClientByAccountNumber(accountNumber);
         SelfServiceRegistration selfServiceRegistration = SelfServiceRegistration.instance(client, accountNumber, firstName, lastName,
                 mobileNumber, email, authenticationToken, username, password);
+        System.out.println(selfServiceRegistration);
         this.selfServiceRegistrationRepository.saveAndFlush(selfServiceRegistration);
+        System.out.println("iwashere3");
         sendAuthorizationToken(selfServiceRegistration, isEmailAuthenticationMode);
         return selfServiceRegistration;
 

@@ -42,6 +42,6 @@ public class FineractClientConfiguration {
         String apiBaseUrl = baseUrl + "/fineract-provider/api/";
         log.info("Using base URL '{}'", apiBaseUrl);
         return FineractClient.builder().readTimeout(Duration.ofSeconds(readTimeout)).basicAuth(username, password).tenant(tenantId)
-                .baseURL(apiBaseUrl).insecure(true).build();
+                .baseURL(apiBaseUrl).build();
     }
 }

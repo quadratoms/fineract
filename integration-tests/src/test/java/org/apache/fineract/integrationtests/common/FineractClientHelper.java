@@ -42,7 +42,7 @@ public final class FineractClientHelper {
     public static FineractClient createNewFineractClient(String username, String password, Consumer<FineractClient.Builder> customizer) {
         String url = System.getProperty("fineract.it.url", buildURI());
         // insecure(true) should *ONLY* ever be used for https://localhost:8443, NOT in real clients!!
-        FineractClient.Builder builder = FineractClient.builder().insecure(true).baseURL(url).tenant(ConfigProperties.Backend.TENANT)
+        FineractClient.Builder builder = FineractClient.builder().baseURL(url).tenant(ConfigProperties.Backend.TENANT)
                 .basicAuth(username, password).logging(HttpLoggingInterceptor.Level.NONE);
         customizer.accept(builder);
         return builder.build();
