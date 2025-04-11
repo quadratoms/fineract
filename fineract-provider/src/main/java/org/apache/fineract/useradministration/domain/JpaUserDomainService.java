@@ -47,15 +47,17 @@ public class JpaUserDomainService implements UserDomainService {
 
         final String unencodedPassword = appUser.getPassword();
 
+        System.out.println(unencodedPassword);
+
         final String encodePassword = this.applicationPasswordEncoder.encode(appUser);
         appUser.updatePassword(encodePassword);
 
         this.userRepository.saveAndFlush(appUser);
 
-        if (sendPasswordToEmail.booleanValue()) {
-            this.emailService.sendToUserAccount(appUser.getOffice().getName(), appUser.getFirstname(), appUser.getEmail(),
-                    appUser.getUsername(), unencodedPassword);
-        }
+//        if (sendPasswordToEmail.booleanValue()) {
+//            this.emailService.sendToUserAccount(appUser.getOffice().getName(), appUser.getFirstname(), appUser.getEmail(),
+//                    appUser.getUsername(), unencodedPassword);
+//        }
     }
 
     private void generateKeyUsedForPasswordSalting(final AppUser appUser) {

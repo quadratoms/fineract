@@ -18,16 +18,9 @@
  */
 package org.apache.fineract.useradministration.service;
 
-import static org.apache.fineract.useradministration.service.AppUserConstants.CLIENTS;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import jakarta.persistence.PersistenceException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -49,13 +42,7 @@ import org.apache.fineract.organisation.staff.domain.StaffRepositoryWrapper;
 import org.apache.fineract.portfolio.client.domain.Client;
 import org.apache.fineract.portfolio.client.domain.ClientRepositoryWrapper;
 import org.apache.fineract.useradministration.api.AppUserApiConstant;
-import org.apache.fineract.useradministration.domain.AppUser;
-import org.apache.fineract.useradministration.domain.AppUserPreviousPassword;
-import org.apache.fineract.useradministration.domain.AppUserPreviousPasswordRepository;
-import org.apache.fineract.useradministration.domain.AppUserRepository;
-import org.apache.fineract.useradministration.domain.Role;
-import org.apache.fineract.useradministration.domain.RoleRepository;
-import org.apache.fineract.useradministration.domain.UserDomainService;
+import org.apache.fineract.useradministration.domain.*;
 import org.apache.fineract.useradministration.exception.PasswordPreviouslyUsedException;
 import org.apache.fineract.useradministration.exception.RoleNotFoundException;
 import org.apache.fineract.useradministration.exception.UserNotFoundException;
@@ -68,6 +55,10 @@ import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+
+import java.util.*;
+
+import static org.apache.fineract.useradministration.service.AppUserConstants.CLIENTS;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -128,7 +119,7 @@ public class AppUserWritePlatformServiceJpaRepositoryImpl implements AppUserWrit
             AppUser appUser = AppUser.fromJson(userOffice, linkedStaff, allRoles, clients, command);
 
             final Boolean sendPasswordToEmail = command.booleanObjectValueOfParameterNamed("sendPasswordToEmail");
-            this.userDomainService.create(appUser, sendPasswordToEmail);
+            this.userDomainService.create(appUser, false);
 
             return new CommandProcessingResultBuilder() //
                     .withCommandId(command.commandId()) //

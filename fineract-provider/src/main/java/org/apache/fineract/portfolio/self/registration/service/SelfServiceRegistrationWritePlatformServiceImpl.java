@@ -22,15 +22,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import jakarta.persistence.PersistenceException;
-import java.lang.reflect.Type;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.fineract.infrastructure.campaigns.sms.data.SmsProviderData;
@@ -58,12 +49,7 @@ import org.apache.fineract.portfolio.self.registration.SelfServiceApiConstants;
 import org.apache.fineract.portfolio.self.registration.domain.SelfServiceRegistration;
 import org.apache.fineract.portfolio.self.registration.domain.SelfServiceRegistrationRepository;
 import org.apache.fineract.portfolio.self.registration.exception.SelfServiceRegistrationNotFoundException;
-import org.apache.fineract.useradministration.domain.AppUser;
-import org.apache.fineract.useradministration.domain.PasswordValidationPolicy;
-import org.apache.fineract.useradministration.domain.PasswordValidationPolicyRepository;
-import org.apache.fineract.useradministration.domain.Role;
-import org.apache.fineract.useradministration.domain.RoleRepository;
-import org.apache.fineract.useradministration.domain.UserDomainService;
+import org.apache.fineract.useradministration.domain.*;
 import org.apache.fineract.useradministration.exception.RoleNotFoundException;
 import org.apache.fineract.useradministration.service.AppUserReadPlatformService;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -71,6 +57,10 @@ import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+
+import java.lang.reflect.Type;
+import java.security.SecureRandom;
+import java.util.*;
 
 @RequiredArgsConstructor
 public class SelfServiceRegistrationWritePlatformServiceImpl implements SelfServiceRegistrationWritePlatformService {
@@ -99,7 +89,6 @@ public class SelfServiceRegistrationWritePlatformServiceImpl implements SelfServ
         this.fromApiJsonHelper.checkForUnsupportedParameters(typeOfMap, apiRequestBodyAsJson,
                 SelfServiceApiConstants.REGISTRATION_REQUEST_DATA_PARAMETERS);
         JsonElement element = gson.fromJson(apiRequestBodyAsJson.toString(), JsonElement.class);
-
         String accountNumber = this.fromApiJsonHelper.extractStringNamed(SelfServiceApiConstants.accountNumberParamName, element);
         baseDataValidator.reset().parameter(SelfServiceApiConstants.accountNumberParamName).value(accountNumber).notNull().notBlank()
                 .notExceedingLengthOf(100);
@@ -149,8 +138,9 @@ public class SelfServiceRegistrationWritePlatformServiceImpl implements SelfServ
                 mobileNumber, email, authenticationToken, username, password);
         System.out.println(selfServiceRegistration);
         this.selfServiceRegistrationRepository.saveAndFlush(selfServiceRegistration);
+        //Todo: create client and appuser from here tosin
         System.out.println("iwashere3");
-        sendAuthorizationToken(selfServiceRegistration, isEmailAuthenticationMode);
+//        sendAuthorizationToken(selfServiceRegistration, isEmailAuthenticationMode);
         return selfServiceRegistration;
 
     }
@@ -269,7 +259,7 @@ public class SelfServiceRegistrationWritePlatformServiceImpl implements SelfServ
             User user = new User(selfServiceRegistration.getUsername(), selfServiceRegistration.getPassword(), authorities);
             AppUser appUser = new AppUser(client.getOffice(), user, allRoles, selfServiceRegistration.getEmail(), client.getFirstname(),
                     client.getLastname(), null, passwordNeverExpire, isSelfServiceUser, clients, null);
-            this.userDomainService.create(appUser, true);
+            this.userDomainService.create(appUser, false);
             return appUser;
 
         } catch (final JpaSystemException | DataIntegrityViolationException dve) {
