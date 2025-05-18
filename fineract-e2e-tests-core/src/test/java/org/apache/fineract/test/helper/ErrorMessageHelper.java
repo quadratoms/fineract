@@ -24,12 +24,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.fineract.client.models.BatchResponse;
 import org.apache.fineract.client.models.GetJournalEntriesTransactionIdResponse;
-import org.apache.fineract.client.models.GetLoanAccountLockResponse;
 import org.apache.fineract.client.models.Header;
+import org.apache.fineract.client.models.LoanAccountLockResponseDTO;
 import retrofit2.Response;
 
 public final class ErrorMessageHelper {
@@ -69,6 +70,14 @@ public final class ErrorMessageHelper {
 
     public static String disburseMaxAmountFailure() {
         return "Loan disbursal amount can't be greater than maximum applied loan amount calculation. Total disbursed amount: [0-9]*  Maximum disbursal amount: [0-9]*";
+    }
+
+    public static String disburseChargedOffLoanFailure() {
+        return "Loan: [0-9]* disbursement is not allowed on charged-off loan.";
+    }
+
+    public static String disburseIsNotAllowedFailure() {
+        return "Loan Disbursal is not allowed. Loan Account is not in approved and not disbursed state.";
     }
 
     public static String loanSubmitDateInFutureFailureMsg() {
@@ -117,6 +126,12 @@ public final class ErrorMessageHelper {
                 loanIdStr);
     }
 
+    public static String chargeOffFailureDueToMonetaryActivityBefore(Long loanId) {
+        String loanIdStr = String.valueOf(loanId);
+        return String.format("Loan: %s charge-off cannot be executed. Loan has monetary activity after the charge-off transaction date!",
+                loanIdStr);
+    }
+
     public static String notChargedOffFailure(Long loanId) {
         String loanIdStr = String.valueOf(loanId);
         return String.format("Loan: %s is not charged-off", loanIdStr);
@@ -129,6 +144,10 @@ public final class ErrorMessageHelper {
     public static String addChargeForChargeOffLoanFailure(Long loanId) {
         String loanIdStr = String.valueOf(loanId);
         return String.format("Adding charge to Loan: %s is not allowed. Loan Account is Charged-off", loanIdStr);
+    }
+
+    public static String addCapitalizedIncomeExceedApprovedAmountFailure() {
+        return "Failed data validation due to: exceeds.approved.amount.";
     }
 
     public static String wrongAmountInRepaymentSchedule(int line, BigDecimal actual, BigDecimal expected) {
@@ -271,6 +290,10 @@ public final class ErrorMessageHelper {
         String expectedToStr = expected.toString();
         return String.format("Wrong amount in Transactions / Loan Balance. Actual amount is: %s - But expected amount is: %s", actualToStr,
                 expectedToStr);
+    }
+
+    public static String transactionHasNullResourceValue(String transactionType, String resourceName) {
+        return String.format("The transaction %s should has non-null value for %s, but it is null.", transactionType, resourceName);
     }
 
     public static String wrongDataInChargesName(String actual, String expected) {
@@ -447,6 +470,10 @@ public final class ErrorMessageHelper {
 
     public static String idempotencyKeyNoMatch(String actual, String expected) {
         return String.format("Idempotency key is not matching:  Actual value is: %s - But expected value is: %s", actual, expected);
+    }
+
+    public static String wrongNumberOfLinesInRepaymentSchedule(int actual, int expected) {
+        return wrongNumberOfLinesInRepaymentSchedule(null, actual, expected);
     }
 
     public static String wrongNumberOfLinesInRepaymentSchedule(String resourceId, int actual, int expected) {
@@ -668,12 +695,12 @@ public final class ErrorMessageHelper {
                 expectedStr);
     }
 
-    public static String listOfLockedLoansNotEmpty(Response<GetLoanAccountLockResponse> response) {
+    public static String listOfLockedLoansNotEmpty(Response<LoanAccountLockResponseDTO> response) {
         String bodyStr = response.body().toString();
         return String.format("List of locked loan accounts is not empty. Actual response is: %n%s", bodyStr);
     }
 
-    public static String listOfLockedLoansContainsLoan(Long loanId, Response<GetLoanAccountLockResponse> response) {
+    public static String listOfLockedLoansContainsLoan(Long loanId, Response<LoanAccountLockResponseDTO> response) {
         String bodyStr = response.body().toString();
         return String.format("List of locked loan accounts contains the loan with loanId %s. List of locked loans: %n%s", loanId, bodyStr);
     }
@@ -879,5 +906,35 @@ public final class ErrorMessageHelper {
         return String.format(
                 "Number of lines in loan charge-off reason options is not correct. Actual value is: %d - Expected value is: %d", actual,
                 expected);
+    }
+
+    public static String wrongExternalID(String actual, String expected) {
+        return String.format("Wrong transaction External ID - %nActual value is: %s %nExpected value is: %s", actual, expected);
+    }
+
+    public static String wrongValueInTotalPages(Integer actual, Integer expected) {
+        return String.format("Wrong value for Total pages. %nActual value is: %s %nExpected value is: %s", actual, expected);
+    }
+
+    public static String wrongValueInLineInDisbursementDetailsTab(String resourceId, int line, Set<List<String>> actualList,
+            List<String> expected) {
+        String actual = actualList.stream().map(Object::toString).collect(Collectors.joining(System.lineSeparator()));
+        return String.format("%nWrong value in Loan Tranche Details tab of resource %s line %s." //
+                + "%nActual values in line (with the same date) are: %n%s %nExpected values in line: %n%s", resourceId, line, actual,
+                expected);
+    }
+
+    public static String nrOfLinesWrongInLoanTrancheDetailsTab(String resourceId, int actual, int expected) {
+        return String.format("%nNumber of lines does not match in Loan Tranche Details tab and expected datatable of resource %s." //
+                + "%nNumber of disbursement details tab lines: %s %nNumber of expected datatable lines: %s%n", resourceId, actual,
+                expected);
+    }
+
+    public static String addInterestPauseForNotInterestBearingLoanFailure() {
+        return "Interest pause is only supported for interest bearing loans.";
+    }
+
+    public static String addInterestPauseForNotInactiveLoanFailure() {
+        return "Operations on interest pauses are restricted to active loans.";
     }
 }

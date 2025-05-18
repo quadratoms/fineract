@@ -182,20 +182,45 @@ Feature: LoanProduct
     When Refund undo happens on "1 July 2022"
     Then Loan has 1000 outstanding amount
 
+  @TestRailId:C3481
   Scenario: As a user I would like to verify Charge-Off reasons options in loan product template response
     When Admin sets the business date to "12 December 2021"
     When Admin creates a client with random data
     And Admin successfully creates a new customised Loan submitted on date: "12 December 2021", with Principal: "1000", a loanTermFrequency: 1 months, and numberOfRepayments: 1
-    Then Loan Product Charge-Off reasons options from loan product template have 2 options, with the following data:
+    Then Loan Product Charge-Off reasons options from loan product template have 5 options, with the following data:
       | Charge-Off Reason Name | Description | Position | Is Active | Is Mandatory |
       | debit_card             |             | 0        | true      | false        |
       | credit_card            |             | 1        | true      | false        |
+      | Fraud                  |             | 2        | true      | false        |
+      | Delinquent             |             | 3        | true      | false        |
+      | Other                  |             | 4        | true      | false        |
 
+  @TestRailId:C3482
   Scenario: As a user I would like to verify Charge-Off reasons options in specific loan product response
     When Admin sets the business date to "12 December 2021"
     When Admin creates a client with random data
     And Admin successfully creates a new customised Loan submitted on date: "12 December 2021", with Principal: "1000", a loanTermFrequency: 1 months, and numberOfRepayments: 1
-    Then Loan Product "LP1" Charge-Off reasons options from specific loan product have 2 options, with the following data:
+    Then Loan Product "LP1" Charge-Off reasons options from specific loan product have 5 options, with the following data:
       | Charge-Off Reason Name | Description | Position | Is Active | Is Mandatory |
       | debit_card             |             | 0        | true      | false        |
       | credit_card            |             | 1        | true      | false        |
+      | Fraud                  |             | 2        | true      | false        |
+      | Delinquent             |             | 3        | true      | false        |
+      | Other                  |             | 4        | true      | false        |
+
+  @TestRailId:C3587
+  Scenario: As a user I would like to verify interestRecognitionOnDisbursementDate=false flag in loan product response
+    When Admin sets the business date to "01 January 2025"
+    When Admin creates a client with random data
+    And Admin successfully creates a new customised Loan submitted on date: "01 January 2025", with Principal: "1000", a loanTermFrequency: 1 months, and numberOfRepayments: 1
+    Then Loan Product response contains interestRecognitionOnDisbursementDate flag with value "false"
+
+  @TestRailId:C3588
+  Scenario: As a user I would like to verify interestRecognitionOnDisbursementDate=true flag in loan product response
+    When Admin sets the business date to "01 January 2025"
+    When Admin creates a client with random data
+    And Admin creates a client with random data
+    And Admin creates a fully customized loan with the following data:
+      | LoanProduct                                                                       | submitted on date | with Principal | ANNUAL interest rate % | interest type     | interest calculation period | amortization type  | loanTermFrequency | loanTermFrequencyType | repaymentEvery | repaymentFrequencyType | numberOfRepayments | graceOnPrincipalPayment | graceOnInterestPayment | interest free period | Payment strategy            |
+      | LP2_ADV_PYMNT_INTEREST_RECOGNITION_DISBURSEMENT_DAILY_EMI_360_30_ACCRUAL_ACTIVITY | 01 January 2025   | 1000           | 26                     | DECLINING_BALANCE | DAILY                       | EQUAL_INSTALLMENTS | 4                 | MONTHS                | 1              | MONTHS                 | 4                  | 0                       | 0                      | 0                    | ADVANCED_PAYMENT_ALLOCATION |
+    Then Loan Product response contains interestRecognitionOnDisbursementDate flag with value "true"
