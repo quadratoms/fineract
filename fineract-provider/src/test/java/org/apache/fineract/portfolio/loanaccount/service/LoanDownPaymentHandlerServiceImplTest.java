@@ -45,6 +45,7 @@ import org.apache.fineract.portfolio.loanaccount.data.HolidayDetailDTO;
 import org.apache.fineract.portfolio.loanaccount.data.ScheduleGeneratorDTO;
 import org.apache.fineract.portfolio.loanaccount.domain.ChangedTransactionDetail;
 import org.apache.fineract.portfolio.loanaccount.domain.Loan;
+import org.apache.fineract.portfolio.loanaccount.domain.LoanLifecycleStateMachine;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransaction;
 import org.apache.fineract.portfolio.loanaccount.domain.LoanTransactionRepository;
 import org.apache.fineract.portfolio.loanaccount.domain.transactionprocessor.LoanRepaymentScheduleTransactionProcessor;
@@ -101,12 +102,22 @@ public class LoanDownPaymentHandlerServiceImplTest {
     @Mock
     private LoanRefundValidator loanRefundValidator;
 
+    @Mock
+    private ReprocessLoanTransactionsService reprocessLoanTransactionsService;
+
+    @Mock
+    private LoanTransactionProcessingService loanTransactionProcessingService;
+
+    @Mock
+    private LoanLifecycleStateMachine loanLifecycleStateMachine;
+
     private LoanDownPaymentHandlerServiceImpl underTest;
 
     @BeforeEach
     public void setUp() {
         underTest = new LoanDownPaymentHandlerServiceImpl(loanTransactionRepository, businessEventNotifierService,
-                loanDownPaymentTransactionValidator, loanScheduleService, loanRefundService, loanRefundValidator);
+                loanDownPaymentTransactionValidator, loanScheduleService, loanRefundService, loanRefundValidator,
+                reprocessLoanTransactionsService, loanTransactionProcessingService, loanLifecycleStateMachine);
         moneyHelper.when(MoneyHelper::getMathContext).thenReturn(new MathContext(12, RoundingMode.UP));
         moneyHelper.when(MoneyHelper::getRoundingMode).thenReturn(RoundingMode.UP);
         tempConfigServiceMock.when(TemporaryConfigurationServiceContainer::isExternalIdAutoGenerationEnabled).thenReturn(true);
@@ -145,14 +156,14 @@ public class LoanDownPaymentHandlerServiceImplTest {
         when(loanForProcessing.getLoanRepaymentScheduleDetail()).thenReturn(loanRepaymentRelatedDetail);
         when(loanForProcessing.repaymentScheduleDetail()).thenReturn(loanRepaymentRelatedDetail);
         when(loanRepaymentRelatedDetail.isInterestRecalculationEnabled()).thenReturn(true);
+        when(loanForProcessing.isInterestBearingAndInterestRecalculationEnabled()).thenReturn(true);
         when(loanRepaymentRelatedDetail.getDisbursedAmountPercentageForDownPayment()).thenReturn(BigDecimal.valueOf(10));
         when(loanForProcessing.getCurrency()).thenReturn(loanCurrency);
         when(loanForProcessing.loanCurrency()).thenReturn(loanCurrency);
         when(loanForProcessing.getLoanProduct()).thenReturn(loanProduct);
         when(loanProduct.getInstallmentAmountInMultiplesOf()).thenReturn(10);
         when(loanForProcessing.getLoanProductRelatedDetail()).thenReturn(loanProductRelatedDetail);
-        when(loanForProcessing.getTransactionProcessor()).thenReturn(loanRepaymentScheduleTransactionProcessor);
-        when(loanRepaymentScheduleTransactionProcessor.reprocessLoanTransactions(any(), any(), any(), any(), any()))
+        when(loanTransactionProcessingService.reprocessLoanTransactions(any(), any(), any(), any(), any(), any()))
                 .thenReturn(changedTransactionDetail);
         when(loanProductRelatedDetail.getLoanScheduleType()).thenReturn(LoanScheduleType.PROGRESSIVE);
 

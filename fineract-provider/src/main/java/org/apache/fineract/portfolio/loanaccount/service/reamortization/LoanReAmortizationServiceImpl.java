@@ -49,6 +49,7 @@ import org.apache.fineract.portfolio.loanaccount.domain.transactionprocessor.Mon
 import org.apache.fineract.portfolio.loanaccount.domain.transactionprocessor.TransactionCtx;
 import org.apache.fineract.portfolio.loanaccount.serialization.LoanChargeValidator;
 import org.apache.fineract.portfolio.loanaccount.service.LoanAssembler;
+import org.apache.fineract.portfolio.loanaccount.service.ReprocessLoanTransactionsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +65,7 @@ public class LoanReAmortizationServiceImpl {
     private final LoanTransactionRepository loanTransactionRepository;
     private final LoanRepaymentScheduleTransactionProcessorFactory loanRepaymentScheduleTransactionProcessorFactory;
     private final LoanChargeValidator loanChargeValidator;
+    private final ReprocessLoanTransactionsService reprocessLoanTransactionsService;
 
     public CommandProcessingResult reAmortize(Long loanId, JsonCommand command) {
         Loan loan = loanAssembler.assembleFrom(loanId);
@@ -128,11 +130,11 @@ public class LoanReAmortizationServiceImpl {
     private void reverseReAmortizeTransaction(LoanTransaction reAmortizeTransaction, JsonCommand command) {
         ExternalId reversalExternalId = externalIdFactory.createFromCommand(command,
                 LoanReAmortizationApiConstants.externalIdParameterName);
-        loanChargeValidator.validateRepaymentTypeTransactionNotBeforeAChargeRefund(reAmortizeTransaction.getLoan(), reAmortizeTransaction,
-                "reversed");
+        final Loan loan = reAmortizeTransaction.getLoan();
+        loanChargeValidator.validateRepaymentTypeTransactionNotBeforeAChargeRefund(loan, reAmortizeTransaction, "reversed");
         reAmortizeTransaction.reverse(reversalExternalId);
         reAmortizeTransaction.manuallyAdjustedOrReversed();
-        reAmortizeTransaction.getLoan().reprocessTransactions();
+        reprocessLoanTransactionsService.reprocessTransactions(loan);
     }
 
     private LoanTransaction findLatestNonReversedReAmortizeTransaction(Loan loan) {
@@ -154,7 +156,7 @@ public class LoanReAmortizationServiceImpl {
         Money txPrincipal = loan.getTotalPrincipalOutstandingUntil(transactionDate);
         BigDecimal txPrincipalAmount = txPrincipal.getAmount();
 
-        return new LoanTransaction(loan, loan.getOffice(), LoanTransactionType.REAMORTIZE.getValue(), transactionDate, txPrincipalAmount,
+        return new LoanTransaction(loan, loan.getOffice(), LoanTransactionType.REAMORTIZE, transactionDate, txPrincipalAmount,
                 txPrincipalAmount, ZERO, ZERO, ZERO, null, false, null, txExternalId);
     }
 }
