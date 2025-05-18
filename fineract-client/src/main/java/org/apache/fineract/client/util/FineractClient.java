@@ -93,6 +93,7 @@ import org.apache.fineract.client.services.LoanProductsApi;
 import org.apache.fineract.client.services.LoanReschedulingApi;
 import org.apache.fineract.client.services.LoanTransactionsApi;
 import org.apache.fineract.client.services.LoansApi;
+import org.apache.fineract.client.services.LoansPointInTimeApi;
 import org.apache.fineract.client.services.MakerCheckerOr4EyeFunctionalityApi;
 import org.apache.fineract.client.services.MappingFinancialActivitiesToAccountsApi;
 import org.apache.fineract.client.services.MixMappingApi;
@@ -106,6 +107,7 @@ import org.apache.fineract.client.services.PaymentTypeApi;
 import org.apache.fineract.client.services.PeriodicAccrualAccountingApi;
 import org.apache.fineract.client.services.PermissionsApi;
 import org.apache.fineract.client.services.PocketApi;
+import org.apache.fineract.client.services.ProgressiveLoanApi;
 import org.apache.fineract.client.services.ProvisioningCategoryApi;
 import org.apache.fineract.client.services.ProvisioningCriteriaApi;
 import org.apache.fineract.client.services.ProvisioningEntriesApi;
@@ -229,6 +231,7 @@ public final class FineractClient {
     public final LoanCollateralApi loanCollaterals;
     public final LoanProductsApi loanProducts;
     public final LoanReschedulingApi loanSchedules;
+    public final LoansPointInTimeApi loansPointInTimeApi;
     public final LoansApi loans;
     public final LoanDisbursementDetailsApi loanDisbursementDetails;
     public final LoanTransactionsApi loanTransactions;
@@ -292,6 +295,7 @@ public final class FineractClient {
     public final UsersApi users;
     public final WorkingDaysApi workingDays;
     public final LoanInterestPauseApi loanInterestPauseApi;
+    public final ProgressiveLoanApi progressiveLoanApi;
 
     public final ExternalAssetOwnersApi externalAssetOwners;
     public final ExternalAssetOwnerLoanProductAttributesApi externalAssetOwnerLoanProductAttributes;
@@ -355,6 +359,7 @@ public final class FineractClient {
         loanCollaterals = retrofit.create(LoanCollateralApi.class);
         loanProducts = retrofit.create(LoanProductsApi.class);
         loanSchedules = retrofit.create(LoanReschedulingApi.class);
+        loansPointInTimeApi = retrofit.create(LoansPointInTimeApi.class);
         loans = retrofit.create(LoansApi.class);
         loanDisbursementDetails = retrofit.create(LoanDisbursementDetailsApi.class);
         loanTransactions = retrofit.create(LoanTransactionsApi.class);
@@ -418,6 +423,7 @@ public final class FineractClient {
         users = retrofit.create(UsersApi.class);
         workingDays = retrofit.create(WorkingDaysApi.class);
         loanInterestPauseApi = retrofit.create(LoanInterestPauseApi.class);
+        progressiveLoanApi = retrofit.create(ProgressiveLoanApi.class);
     }
 
     public static Builder builder() {
